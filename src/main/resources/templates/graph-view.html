@@ -6,15 +6,40 @@
     <link rel="stylesheet" href="https://unpkg.com/vis-network/styles/vis-network.min.css" />
     <style>
         body { font-family: Arial, sans-serif; margin: 2rem; }
+        .layout { display: flex; gap: 1.5rem; }
+        .graph-panel { flex: 1 1 auto; min-width: 0; }
+        .taskbar { width: 300px; border: 1px solid #ddd; border-radius: 8px; padding: 1rem; }
+        .taskbar h2 { margin-top: 0; }
+        .taskbar ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 1rem; }
+        .taskbar li { border-bottom: 1px solid #eee; padding-bottom: 0.75rem; }
+        .taskbar li:last-child { border-bottom: none; padding-bottom: 0; }
+        .relation-label { font-weight: 600; }
         #network { width: 100%; height: 80vh; border: 1px solid #ddd; }
-        .container { max-width: 1200px; margin: 0 auto; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .meta { color: #666; font-size: 0.9rem; }
     </style>
 </head>
 <body>
 <div class="container">
     <h1>Graph View</h1>
     <p><a th:href="@{/graph}">Table View</a></p>
-    <div id="network"></div>
+    <div class="layout">
+        <div class="graph-panel">
+            <div id="network"></div>
+        </div>
+        <aside class="taskbar">
+            <h2>Public relations</h2>
+            <ul>
+                <li th:if="${#lists.isEmpty(publicEdges)}">No public relations yet.</li>
+                <li th:each="edge : ${publicEdges}">
+                    <div class="relation-label" th:text="${edge.label != null ? edge.label : '(unnamed relation)'}"></div>
+                    <div th:text="'→ ' + ${edge.toName}"></div>
+                    <div class="meta" th:text="${edge.createdAt != null ? 'Created: ' + edge.createdAt : 'Created: —'}"></div>
+                    <div class="meta" th:text="${edge.expiredAt != null ? 'Expired: ' + edge.expiredAt : 'Expired: —'}"></div>
+                </li>
+            </ul>
+        </aside>
+    </div>
 </div>
 
 <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
@@ -30,6 +55,7 @@
     const edgesData = edges.map(edge => ({
         from: edge.fromId,
         to: edge.toId,
+        label: edge.label ? edge.label : "",
         arrows: "to"
     }));
 

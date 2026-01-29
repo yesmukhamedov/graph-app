@@ -8,4 +8,6 @@ public interface EdgeRepository extends JpaRepository<EdgeEntity, Long> {
     boolean existsByFromNodeIdAndToNodeId(Long fromId, Long toId);
 
     List<EdgeEntity> findAllByFromNodeId(Long fromId);
+
+    List<EdgeEntity> findAllByFromNodeIsNull();
 }

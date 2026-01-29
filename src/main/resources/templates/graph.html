@@ -79,8 +79,11 @@
             </select>
         </div>
         <div class="form-row">
-            <label for="label">Label</label>
-            <input id="label" type="text" th:field="*{label}" maxlength="200" placeholder="Optional" />
+            <label for="labelId">Label</label>
+            <select id="labelId" th:field="*{labelId}">
+                <option value="" selected>Optional</option>
+                <option th:each="label : ${publicEdgeLabels}" th:value="${label.id}" th:text="${label.text}"></option>
+            </select>
             <label for="createdAt">Created At</label>
             <input id="createdAt" type="datetime-local" th:field="*{createdAt}" />
             <label for="expiredAt">Expired At</label>

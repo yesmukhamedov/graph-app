@@ -8,7 +8,7 @@ public class EdgeForm {
     @NotNull(message = "To node is required.")
     private Long toId;
 
-    private String label;
+    private Long labelId;
 
     private String createdAt;
 
@@ -30,12 +30,12 @@ public class EdgeForm {
         this.toId = toId;
     }
 
-    public String getLabel() {
-        return label;
+    public Long getLabelId() {
+        return labelId;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setLabelId(Long labelId) {
+        this.labelId = labelId;
     }
 
     public String getCreatedAt() {

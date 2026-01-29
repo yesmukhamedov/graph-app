@@ -4,12 +4,13 @@ import com.example.graph.model.EdgeEntity;
 import com.example.graph.model.NameEntity;
 import com.example.graph.model.NodeEntity;
 import com.example.graph.repository.EdgeRepository;
-import com.example.graph.repository.NameRepository;
 import com.example.graph.repository.NodeRepository;
 import com.example.graph.web.dto.EdgeDto;
+import com.example.graph.web.dto.NameDto;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.Comparator;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,15 +19,13 @@ import org.springframework.transaction.annotation.Transactional;
 public class EdgeService {
     private final EdgeRepository edgeRepository;
     private final NodeRepository nodeRepository;
-    private final NameRepository nameRepository;
 
-    public EdgeService(EdgeRepository edgeRepository, NodeRepository nodeRepository, NameRepository nameRepository) {
+    public EdgeService(EdgeRepository edgeRepository, NodeRepository nodeRepository) {
         this.edgeRepository = edgeRepository;
         this.nodeRepository = nodeRepository;
-        this.nameRepository = nameRepository;
     }
 
-    public EdgeEntity createEdge(Long fromId, Long toId, String labelText,
+    public EdgeEntity createEdge(Long fromId, Long toId, Long labelId,
                                  LocalDateTime createdAt, LocalDateTime expiredAt) {
         if (toId == null) {
             throw new IllegalArgumentException("To node is required.");
@@ -56,11 +55,12 @@ public class EdgeService {
         edge.setCreatedAt(createdAtOffset);
         edge.setExpiredAt(expiredAtOffset);
 
-        if (labelText != null && !labelText.trim().isEmpty()) {
-            NameEntity label = new NameEntity();
-            label.setText(labelText.trim());
-            label.setCreatedAt(OffsetDateTime.now());
-            edge.setLabel(nameRepository.save(label));
+        if (labelId != null) {
+            NameEntity label = edgeRepository.findDistinctPublicEdgeLabels().stream()
+                .filter(candidate -> labelId.equals(candidate.getId()))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Label is not a public edge label."));
+            edge.setLabel(label);
         }
         return edgeRepository.save(edge);
     }
@@ -81,6 +81,14 @@ public class EdgeService {
 
     public void deleteEdge(Long id) {
         edgeRepository.deleteById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public List<NameDto> getPublicEdgeLabels() {
+        return edgeRepository.findDistinctPublicEdgeLabels().stream()
+            .map(label -> new NameDto(label.getId(), label.getText()))
+            .sorted(Comparator.comparing(NameDto::getText, String.CASE_INSENSITIVE_ORDER))
+            .toList();
     }
 
     private OffsetDateTime toOffsetDateTime(LocalDateTime value) {

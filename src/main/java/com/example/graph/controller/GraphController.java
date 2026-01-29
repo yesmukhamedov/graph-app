@@ -29,6 +29,7 @@ public class GraphController {
     public String graph(Model model) {
         model.addAttribute("nodes", nodeService.listNodes());
         model.addAttribute("edges", edgeService.listEdges());
+        model.addAttribute("publicEdgeLabels", edgeService.getPublicEdgeLabels());
         if (!model.containsAttribute("nodeForm")) {
             model.addAttribute("nodeForm", new NodeForm());
         }

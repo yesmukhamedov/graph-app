@@ -41,7 +41,10 @@ public class GraphController {
     @GetMapping("/graph/view")
     public String viewGraph(Model model) {
         model.addAttribute("nodes", nodeService.listNodes());
-        model.addAttribute("edges", edgeService.listEdges());
+        model.addAttribute("edges", edgeService.listEdges().stream()
+            .filter(edge -> edge.getFromId() != null)
+            .toList());
+        model.addAttribute("publicEdges", edgeService.getPublicEdges());
         return "graph-view";
     }
 }

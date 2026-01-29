@@ -3,7 +3,6 @@ package com.example.graph.web;
 import jakarta.validation.constraints.NotNull;
 
 public class EdgeForm {
-    @NotNull(message = "From node is required.")
     private Long fromId;
 
     @NotNull(message = "To node is required.")

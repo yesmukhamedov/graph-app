@@ -6,15 +6,42 @@
     <link rel="stylesheet" href="https://unpkg.com/vis-network/styles/vis-network.min.css" />
     <style>
         body { font-family: Arial, sans-serif; margin: 2rem; }
-        #network { width: 100%; height: 80vh; border: 1px solid #ddd; }
         .container { max-width: 1200px; margin: 0 auto; }
+        .layout { display: flex; gap: 1.5rem; align-items: flex-start; }
+        #network { flex: 1; height: 80vh; border: 1px solid #ddd; }
+        .taskbar { width: 300px; border: 1px solid #ddd; padding: 1rem; border-radius: 4px; }
+        .taskbar h2 { margin-top: 0; }
+        .taskbar ul { list-style: none; padding-left: 0; margin: 0; }
+        .taskbar li { padding: 0.5rem 0; border-bottom: 1px solid #eee; }
+        .taskbar li:last-child { border-bottom: none; }
+        .taskbar .meta { color: #666; font-size: 0.85rem; }
     </style>
 </head>
 <body>
 <div class="container">
     <h1>Graph View</h1>
     <p><a th:href="@{/graph}">Table View</a></p>
-    <div id="network"></div>
+    <div class="layout">
+        <div id="network"></div>
+        <aside class="taskbar">
+            <h2>Public relations</h2>
+            <p th:if="${#lists.isEmpty(publicEdges)}">No public relations yet.</p>
+            <ul th:if="${!#lists.isEmpty(publicEdges)}">
+                <li th:each="edge : ${publicEdges}">
+                    <div>
+                        <strong th:text="${edge.label != null ? edge.label : '(unnamed relation)'}"></strong>
+                        <span> → </span>
+                        <span th:text="${edge.toName}"></span>
+                    </div>
+                    <div class="meta">
+                        <span th:if="${edge.createdAt != null}" th:text="|Created: ${edge.createdAt}|"></span>
+                        <span th:if="${edge.createdAt != null && edge.expiredAt != null}"> · </span>
+                        <span th:if="${edge.expiredAt != null}" th:text="|Expired: ${edge.expiredAt}|"></span>
+                    </div>
+                </li>
+            </ul>
+        </aside>
+    </div>
 </div>
 
 <script src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>

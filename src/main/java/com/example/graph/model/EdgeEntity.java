@@ -27,9 +27,8 @@ public class EdgeEntity {
     @JoinColumn(name = "name_id")
     private NameEntity label;
 
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "from_id", nullable = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "from_id", nullable = true)
     private NodeEntity fromNode;
 
     @NotNull

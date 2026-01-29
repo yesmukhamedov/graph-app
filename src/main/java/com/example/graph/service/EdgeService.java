@@ -28,17 +28,20 @@ public class EdgeService {
 
     public EdgeEntity createEdge(Long fromId, Long toId, String labelText,
                                  LocalDateTime createdAt, LocalDateTime expiredAt) {
-        if (fromId == null || toId == null) {
-            throw new IllegalArgumentException("Both from and to nodes are required.");
+        if (toId == null) {
+            throw new IllegalArgumentException("To node is required.");
         }
-        if (fromId.equals(toId)) {
-            throw new IllegalArgumentException("Self-loops are not allowed.");
+        NodeEntity fromNode = null;
+        if (fromId != null) {
+            if (fromId.equals(toId)) {
+                throw new IllegalArgumentException("Self-loops are not allowed.");
+            }
+            fromNode = nodeRepository.findById(fromId)
+                .orElseThrow(() -> new IllegalArgumentException("From node not found."));
         }
-        NodeEntity fromNode = nodeRepository.findById(fromId)
-            .orElseThrow(() -> new IllegalArgumentException("From node not found."));
         NodeEntity toNode = nodeRepository.findById(toId)
             .orElseThrow(() -> new IllegalArgumentException("To node not found."));
-        if (edgeRepository.existsByFromNodeIdAndToNodeId(fromId, toId)) {
+        if (fromId != null && edgeRepository.existsByFromNodeIdAndToNodeId(fromId, toId)) {
             throw new IllegalArgumentException("That edge already exists.");
         }
         OffsetDateTime createdAtOffset = toOffsetDateTime(createdAt);
@@ -65,16 +68,14 @@ public class EdgeService {
     @Transactional(readOnly = true)
     public List<EdgeDto> listEdges() {
         return edgeRepository.findAll().stream()
-            .map(edge -> new EdgeDto(
-                edge.getId(),
-                edge.getFromNode().getId(),
-                edge.getToNode().getId(),
-                edge.getLabel() == null ? null : edge.getLabel().getText(),
-                edge.getCreatedAt(),
-                edge.getExpiredAt(),
-                edge.getFromNode().getName().getText(),
-                edge.getToNode().getName().getText()
-            ))
+            .map(this::toDto)
+            .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<EdgeDto> getPublicEdges() {
+        return edgeRepository.findAllByFromNodeIsNull().stream()
+            .map(this::toDto)
             .toList();
     }
 
@@ -87,5 +88,20 @@ public class EdgeService {
             return null;
         }
         return value.atZone(ZoneId.systemDefault()).toOffsetDateTime();
+    }
+
+    private EdgeDto toDto(EdgeEntity edge) {
+        NodeEntity fromNode = edge.getFromNode();
+        NodeEntity toNode = edge.getToNode();
+        return new EdgeDto(
+            edge.getId(),
+            fromNode == null ? null : fromNode.getId(),
+            toNode.getId(),
+            edge.getLabel() == null ? null : edge.getLabel().getText(),
+            edge.getCreatedAt(),
+            edge.getExpiredAt(),
+            fromNode == null ? null : fromNode.getName().getText(),
+            toNode.getName().getText()
+        );
     }
 }

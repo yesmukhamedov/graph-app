@@ -3,6 +3,9 @@ package com.example.graph.controller;
 import com.example.graph.service.EdgeService;
 import com.example.graph.web.EdgeForm;
 import jakarta.validation.Valid;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -14,6 +17,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/edges")
 public class EdgeController {
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ISO_LOCAL_DATE_TIME;
+
     private final EdgeService edgeService;
 
     public EdgeController(EdgeService edgeService) {
@@ -29,8 +34,13 @@ public class EdgeController {
             return "redirect:/graph";
         }
         try {
-            edgeService.createEdge(edgeForm.getFromId(), edgeForm.getToId());
+            LocalDateTime createdAt = parseDateTime(edgeForm.getCreatedAt());
+            LocalDateTime expiredAt = parseDateTime(edgeForm.getExpiredAt());
+            edgeService.createEdge(edgeForm.getFromId(), edgeForm.getToId(), edgeForm.getLabel(), createdAt, expiredAt);
             redirectAttributes.addFlashAttribute("success", "Edge created.");
+        } catch (DateTimeParseException ex) {
+            redirectAttributes.addFlashAttribute("error", "Invalid date/time format.");
+            redirectAttributes.addFlashAttribute("edgeForm", edgeForm);
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("error", ex.getMessage());
         } catch (DataIntegrityViolationException ex) {
@@ -44,5 +54,12 @@ public class EdgeController {
         edgeService.deleteEdge(id);
         redirectAttributes.addFlashAttribute("success", "Edge deleted.");
         return "redirect:/graph";
+    }
+
+    private LocalDateTime parseDateTime(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return LocalDateTime.parse(value, DATE_TIME_FORMATTER);
     }
 }

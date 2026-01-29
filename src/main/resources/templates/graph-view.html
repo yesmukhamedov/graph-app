@@ -30,6 +30,7 @@
     const edgesData = edges.map(edge => ({
         from: edge.fromId,
         to: edge.toId,
+        label: edge.label ? edge.label : "",
         arrows: "to"
     }));
 

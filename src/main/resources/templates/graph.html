@@ -12,8 +12,9 @@
         .message.success { background-color: #e7f6e7; color: #1e5c1e; }
         .message.error { background-color: #fdecea; color: #9b1c1c; }
         form.inline { display: inline; }
-        .form-row { display: flex; gap: 1rem; align-items: center; margin-bottom: 1rem; }
+        .form-row { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; margin-bottom: 1rem; }
         .form-row label { min-width: 120px; }
+        .form-row input, .form-row select { min-width: 180px; }
     </style>
 </head>
 <body>
@@ -28,7 +29,7 @@
     <form th:action="@{/nodes}" method="post" th:object="${nodeForm}">
         <div class="form-row">
             <label for="name">Name</label>
-            <input id="name" type="text" th:field="*{name}" maxlength="100" required />
+            <input id="name" type="text" th:field="*{name}" maxlength="200" required />
             <button type="submit">Create Node</button>
         </div>
     </form>
@@ -75,6 +76,14 @@
                 <option value="" disabled selected>Select node</option>
                 <option th:each="node : ${nodes}" th:value="${node.id}" th:text="${node.name}"></option>
             </select>
+        </div>
+        <div class="form-row">
+            <label for="label">Label</label>
+            <input id="label" type="text" th:field="*{label}" maxlength="200" placeholder="Optional" />
+            <label for="createdAt">Created At</label>
+            <input id="createdAt" type="datetime-local" th:field="*{createdAt}" />
+            <label for="expiredAt">Expired At</label>
+            <input id="expiredAt" type="datetime-local" th:field="*{expiredAt}" />
             <button type="submit">Create Edge</button>
         </div>
     </form>
@@ -86,19 +95,25 @@
         <thead>
         <tr>
             <th>ID</th>
+            <th>Label</th>
             <th>From</th>
             <th>To</th>
+            <th>Created At</th>
+            <th>Expired At</th>
             <th>Actions</th>
         </tr>
         </thead>
         <tbody>
         <tr th:if="${#lists.isEmpty(edges)}">
-            <td colspan="4">No edges yet.</td>
+            <td colspan="7">No edges yet.</td>
         </tr>
         <tr th:each="edge : ${edges}">
             <td th:text="${edge.id}"></td>
-            <td th:text="${edge.fromNode.name}"></td>
-            <td th:text="${edge.toNode.name}"></td>
+            <td th:text="${edge.label != null ? edge.label : '—'}"></td>
+            <td th:text="${edge.fromName}"></td>
+            <td th:text="${edge.toName}"></td>
+            <td th:text="${edge.createdAt != null ? edge.createdAt : '—'}"></td>
+            <td th:text="${edge.expiredAt != null ? edge.expiredAt : '—'}"></td>
             <td>
                 <form class="inline" th:action="@{/edges/{id}/delete(id=${edge.id})}" method="post">
                     <button type="submit">Delete</button>

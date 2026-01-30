@@ -1,4 +1,4 @@
-package com.example.graph.web.Public;
+package com.example.graph.web.form;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

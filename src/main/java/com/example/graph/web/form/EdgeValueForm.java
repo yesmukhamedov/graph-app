@@ -1,4 +1,4 @@
-package com.example.graph.web.Public;
+package com.example.graph.web.form;
 
 import java.time.OffsetDateTime;
 import lombok.AllArgsConstructor;
@@ -8,12 +8,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class EdgePublicForm {
-    private Long id;
-    private Long fromNodeId;
-    private Long toNodeId;
+public class EdgeValueForm {
+    private Long edgeId;
     private String value;
-    private OffsetDateTime createdAt;
-    private OffsetDateTime expiredAt;
+    private OffsetDateTime effectiveAt;
     private String createdBy;
 }

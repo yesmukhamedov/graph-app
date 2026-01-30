@@ -1,8 +1,9 @@
 package com.example.graph.service;
 
 import com.example.graph.model.NodeEntity;
-import com.example.graph.model.NodeValueEntity;
+import com.example.graph.model.value.NodeValueEntity;
 import com.example.graph.repository.NodeRepository;
+import com.example.graph.service.value.NodeValueService;
 import com.example.graph.web.dto.NodeDto;
 import java.time.OffsetDateTime;
 import java.util.List;

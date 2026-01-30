@@ -2,7 +2,7 @@ package com.example.graph.service;
 
 import com.example.graph.model.EdgeEntity;
 import com.example.graph.model.NodeEntity;
-import com.example.graph.model.PhoneEntity;
+import com.example.graph.model.phone.PhoneEntity;
 import com.example.graph.repository.EdgeRepository;
 import com.example.graph.repository.NodeRepository;
 import com.example.graph.repository.PhoneRepository;
@@ -14,6 +14,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import com.example.graph.service.phone.PhoneValueService;
+import com.example.graph.service.value.EdgeValueService;
+import com.example.graph.service.value.NodeValueService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

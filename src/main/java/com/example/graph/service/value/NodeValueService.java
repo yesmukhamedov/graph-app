@@ -1,6 +1,6 @@
-package com.example.graph.service;
+package com.example.graph.service.value;
 
-import com.example.graph.model.NodeValueEntity;
+import com.example.graph.model.value.NodeValueEntity;
 import com.example.graph.repository.NodeValueRepository;
 import java.time.OffsetDateTime;
 import java.util.List;

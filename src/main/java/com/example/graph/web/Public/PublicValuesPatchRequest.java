@@ -1,5 +1,7 @@
-package com.example.graph.web.dto;
+package com.example.graph.web.Public;
 
+import com.example.graph.web.dto.EdgeValueForm;
+import com.example.graph.web.dto.NodeValueForm;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

@@ -1,6 +1,6 @@
 package com.example.graph.repository;
 
-import com.example.graph.model.PhoneValueEntity;
+import com.example.graph.model.phone.PhoneValueEntity;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Optional;

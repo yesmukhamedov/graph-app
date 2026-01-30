@@ -1,4 +1,4 @@
-package com.example.graph.model;
+package com.example.graph.model.phone;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

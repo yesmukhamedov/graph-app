@@ -4,6 +4,8 @@ import com.example.graph.model.EdgeEntity;
 import com.example.graph.model.NodeEntity;
 import com.example.graph.repository.EdgeRepository;
 import com.example.graph.repository.NodeRepository;
+import com.example.graph.service.value.EdgeValueService;
+import com.example.graph.service.value.NodeValueService;
 import com.example.graph.web.dto.EdgeDto;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;

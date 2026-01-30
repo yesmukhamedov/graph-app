@@ -1,6 +1,6 @@
 package com.example.graph.repository;
 
-import com.example.graph.model.PhoneEntity;
+import com.example.graph.model.phone.PhoneEntity;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 

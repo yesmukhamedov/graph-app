@@ -1,5 +1,6 @@
-package com.example.graph.model;
+package com.example.graph.model.value;
 
+import com.example.graph.model.EdgeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -19,25 +20,25 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Entity
-@Table(name = "phone_values")
+@Table(name = "edge_values")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@ToString(exclude = "phone")
-public class PhoneValueEntity {
+@ToString(exclude = "edge")
+public class EdgeValueEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "phone_id", nullable = false)
-    private PhoneEntity phone;
+    @JoinColumn(name = "edge_id", nullable = false)
+    private EdgeEntity edge;
 
     @NotBlank
-    @Size(max = 32)
-    @Column(nullable = false, length = 32)
+    @Size(max = 200)
+    @Column(nullable = false, length = 200)
     private String value;
 
     @Column(name = "created_at")

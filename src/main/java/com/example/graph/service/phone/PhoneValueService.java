@@ -1,7 +1,7 @@
-package com.example.graph.service;
+package com.example.graph.service.phone;
 
-import com.example.graph.model.PhoneEntity;
-import com.example.graph.model.PhoneValueEntity;
+import com.example.graph.model.phone.PhoneEntity;
+import com.example.graph.model.phone.PhoneValueEntity;
 import com.example.graph.repository.PhoneValueRepository;
 import java.time.OffsetDateTime;
 import java.util.Map;

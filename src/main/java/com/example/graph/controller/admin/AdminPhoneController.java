@@ -1,7 +1,7 @@
-package com.example.graph.controller;
+package com.example.graph.controller.admin;
 
 import com.example.graph.service.NodeService;
-import com.example.graph.service.PhoneService;
+import com.example.graph.service.phone.PhoneService;
 import com.example.graph.web.PhoneForm;
 import jakarta.validation.Valid;
 import org.springframework.dao.DataIntegrityViolationException;

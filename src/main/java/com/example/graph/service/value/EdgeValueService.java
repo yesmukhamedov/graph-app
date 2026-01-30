@@ -1,7 +1,7 @@
-package com.example.graph.service;
+package com.example.graph.service.value;
 
 import com.example.graph.model.EdgeEntity;
-import com.example.graph.model.EdgeValueEntity;
+import com.example.graph.model.value.EdgeValueEntity;
 import com.example.graph.repository.EdgeValueRepository;
 import java.time.OffsetDateTime;
 import java.util.List;

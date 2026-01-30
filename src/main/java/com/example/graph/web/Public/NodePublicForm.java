@@ -1,4 +1,4 @@
-package com.example.graph.web.dto;
+package com.example.graph.web.Public;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

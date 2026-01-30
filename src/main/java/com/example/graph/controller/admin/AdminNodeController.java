@@ -1,4 +1,4 @@
-package com.example.graph.controller;
+package com.example.graph.controller.admin;
 
 import com.example.graph.service.NodeService;
 import com.example.graph.web.NodeForm;

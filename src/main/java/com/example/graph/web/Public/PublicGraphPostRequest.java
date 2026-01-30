@@ -1,6 +1,7 @@
-package com.example.graph.web.dto;
+package com.example.graph.web.Public;
 
 import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

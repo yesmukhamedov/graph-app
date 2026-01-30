@@ -3,6 +3,7 @@ package com.example.graph.converter;
 import com.example.graph.model.EdgeEntity;
 import com.example.graph.model.NodeEntity;
 import com.example.graph.model.phone.PhoneEntity;
+import com.example.graph.model.phone.PhoneValueEntity;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +14,7 @@ public class GraphSnapshot {
     private final List<PhoneEntity> phones;
     private final Map<Long, String> nodeValues;
     private final Map<Long, String> edgeValues;
-    private final Map<Long, String> phoneValues;
+    private final Map<Long, PhoneValueEntity> phoneValues;
     private final OffsetDateTime atTime;
 
     public GraphSnapshot(List<NodeEntity> nodes,
@@ -21,7 +22,7 @@ public class GraphSnapshot {
                          List<PhoneEntity> phones,
                          Map<Long, String> nodeValues,
                          Map<Long, String> edgeValues,
-                         Map<Long, String> phoneValues,
+                         Map<Long, PhoneValueEntity> phoneValues,
                          OffsetDateTime atTime) {
         this.nodes = nodes;
         this.edges = edges;
@@ -52,7 +53,7 @@ public class GraphSnapshot {
         return edgeValues;
     }
 
-    public Map<Long, String> getPhoneValues() {
+    public Map<Long, PhoneValueEntity> getPhoneValues() {
         return phoneValues;
     }
 

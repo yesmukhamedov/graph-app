@@ -7,8 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PhoneDto {
-    private Long id;
-    private String nodeName;
-    private PhoneValueDto currentValue;
+public class PhoneValueDto {
+    private String value;
+    private PhonePatternDto pattern;
 }

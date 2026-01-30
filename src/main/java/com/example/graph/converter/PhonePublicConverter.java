@@ -31,18 +31,18 @@ public class PhonePublicConverter {
             .orElseThrow(() -> new ValidationException("Node not found."));
         return phoneRepository.findByNodeId(form.getNodeId())
             .orElseGet(() -> {
-                PhonePatternEntity pattern = phonePatternRepository.findById(form.getPatternId())
-                    .orElseThrow(() -> new ValidationException("Pattern not found."));
                 PhoneEntity phone = new PhoneEntity();
                 phone.setNode(node);
-                phone.setPattern(pattern);
                 return phoneRepository.save(phone);
             });
     }
 
     public PhoneValueEntity toValueEntity(PhoneEntity phone, PhonePublicForm form, OffsetDateTime now) {
+        PhonePatternEntity pattern = phonePatternRepository.findById(form.getPatternId())
+            .orElseThrow(() -> new ValidationException("Pattern not found."));
         PhoneValueEntity value = new PhoneValueEntity();
         value.setPhone(phone);
+        value.setPattern(pattern);
         value.setValue(form.getValue().trim());
         value.setCreatedAt(now);
         value.setCreatedBy(normalize(form.getCreatedBy()));

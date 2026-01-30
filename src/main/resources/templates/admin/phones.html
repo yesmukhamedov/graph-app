@@ -80,8 +80,8 @@
         <tr th:each="phone : ${phones}">
             <td th:text="${phone.id}"></td>
             <td th:text="${phone.nodeName}"></td>
-            <td th:text="${phone.patternCode}"></td>
-            <td th:text="${phone.value}"></td>
+            <td th:text="${phone.currentValue.pattern.code}"></td>
+            <td th:text="${phone.currentValue.value}"></td>
             <td>
                 <form class="inline" th:action="@{/admin/phones/{id}/delete(id=${phone.id})}" method="post">
                     <button type="submit">Delete</button>

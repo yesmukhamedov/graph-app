@@ -3,6 +3,7 @@ package com.example.graph.converter;
 import com.example.graph.model.EdgeEntity;
 import com.example.graph.model.NodeEntity;
 import com.example.graph.model.phone.PhoneEntity;
+import com.example.graph.model.phone.PhoneValueEntity;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -53,10 +54,12 @@ public class JsonLdConverter {
             entry.put("@id", "phone:" + phone.getId());
             entry.put("@type", "Phone");
             entry.put("node", "node:" + phone.getNode().getId());
-            entry.put("pattern", phone.getPattern().getCode());
-            String value = snapshot.getPhoneValues().get(phone.getId());
-            if (value != null) {
-                entry.put("value", value);
+            PhoneValueEntity currentValue = snapshot.getPhoneValues().get(phone.getId());
+            if (currentValue != null && currentValue.getPattern() != null) {
+                entry.put("pattern", currentValue.getPattern().getCode());
+            }
+            if (currentValue != null && currentValue.getValue() != null) {
+                entry.put("value", currentValue.getValue());
             }
             graph.add(entry);
         }

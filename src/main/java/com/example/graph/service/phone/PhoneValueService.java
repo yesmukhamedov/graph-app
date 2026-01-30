@@ -1,6 +1,7 @@
 package com.example.graph.service.phone;
 
 import com.example.graph.model.phone.PhoneEntity;
+import com.example.graph.model.phone.PhonePatternEntity;
 import com.example.graph.model.phone.PhoneValueEntity;
 import com.example.graph.repository.PhoneValueRepository;
 import java.time.OffsetDateTime;
@@ -22,9 +23,11 @@ public class PhoneValueService {
         return phoneValueRepository.existsByValue(value);
     }
 
-    public PhoneValueEntity createCurrentValue(PhoneEntity phone, String value, OffsetDateTime createdAt) {
+    public PhoneValueEntity createCurrentValue(PhoneEntity phone, PhonePatternEntity pattern, String value,
+                                               OffsetDateTime createdAt) {
         PhoneValueEntity phoneValue = new PhoneValueEntity();
         phoneValue.setPhone(phone);
+        phoneValue.setPattern(pattern);
         phoneValue.setValue(value);
         phoneValue.setCreatedAt(createdAt);
         return phoneValueRepository.save(phoneValue);
@@ -41,8 +44,8 @@ public class PhoneValueService {
     }
 
     @Transactional(readOnly = true)
-    public Map<Long, String> getCurrentValues(OffsetDateTime now) {
+    public Map<Long, PhoneValueEntity> getCurrentValues(OffsetDateTime now) {
         return phoneValueRepository.findCurrentValues(now).stream()
-            .collect(Collectors.toMap(value -> value.getPhone().getId(), PhoneValueEntity::getValue, (a, b) -> a));
+            .collect(Collectors.toMap(value -> value.getPhone().getId(), value -> value, (a, b) -> a));
     }
 }

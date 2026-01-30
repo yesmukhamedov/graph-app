@@ -1,6 +1,5 @@
 package com.example.graph.model.phone;
 
-import com.example.graph.model.phone.PhoneEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -25,7 +24,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@ToString(exclude = "phone")
+@ToString(exclude = {"phone", "pattern"})
 public class PhoneValueEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,6 +34,10 @@ public class PhoneValueEntity {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "phone_id", nullable = false)
     private PhoneEntity phone;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "pattern_id", nullable = false)
+    private PhonePatternEntity pattern;
 
     @NotBlank
     @Size(max = 32)

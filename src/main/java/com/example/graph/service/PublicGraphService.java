@@ -1,23 +1,37 @@
 package com.example.graph.service;
 
+import com.example.graph.converter.EdgePublicConverter;
+import com.example.graph.converter.GraphSnapshot;
+import com.example.graph.converter.NodePublicConverter;
+import com.example.graph.converter.PhonePublicConverter;
 import com.example.graph.model.EdgeEntity;
 import com.example.graph.model.NodeEntity;
 import com.example.graph.model.phone.PhoneEntity;
+import com.example.graph.model.value.EdgeValueEntity;
+import com.example.graph.model.value.NodeValueEntity;
+import com.example.graph.model.phone.PhoneValueEntity;
 import com.example.graph.repository.EdgeRepository;
+import com.example.graph.repository.EdgeValueRepository;
 import com.example.graph.repository.NodeRepository;
+import com.example.graph.repository.NodeValueRepository;
 import com.example.graph.repository.PhoneRepository;
-import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.example.graph.repository.PhoneValueRepository;
 import com.example.graph.service.phone.PhoneValueService;
 import com.example.graph.service.value.EdgeValueService;
 import com.example.graph.service.value.NodeValueService;
+import com.example.graph.web.PublicGraphPostRequest;
+import com.example.graph.web.PublicValuesPatchRequest;
+import com.example.graph.web.form.EdgePublicForm;
+import com.example.graph.web.form.EdgeValueForm;
+import com.example.graph.web.form.NodePublicForm;
+import com.example.graph.web.form.NodeValueForm;
+import com.example.graph.web.form.PhonePublicForm;
+import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,86 +43,90 @@ public class PublicGraphService {
     private final NodeValueService nodeValueService;
     private final EdgeValueService edgeValueService;
     private final PhoneValueService phoneValueService;
+    private final NodeValueRepository nodeValueRepository;
+    private final EdgeValueRepository edgeValueRepository;
+    private final PhoneValueRepository phoneValueRepository;
+    private final NodePublicConverter nodePublicConverter;
+    private final EdgePublicConverter edgePublicConverter;
+    private final PhonePublicConverter phonePublicConverter;
 
     public PublicGraphService(NodeRepository nodeRepository,
                               EdgeRepository edgeRepository,
                               PhoneRepository phoneRepository,
                               NodeValueService nodeValueService,
                               EdgeValueService edgeValueService,
-                              PhoneValueService phoneValueService) {
+                              PhoneValueService phoneValueService,
+                              NodeValueRepository nodeValueRepository,
+                              EdgeValueRepository edgeValueRepository,
+                              PhoneValueRepository phoneValueRepository,
+                              NodePublicConverter nodePublicConverter,
+                              EdgePublicConverter edgePublicConverter,
+                              PhonePublicConverter phonePublicConverter) {
         this.nodeRepository = nodeRepository;
         this.edgeRepository = edgeRepository;
         this.phoneRepository = phoneRepository;
         this.nodeValueService = nodeValueService;
         this.edgeValueService = edgeValueService;
         this.phoneValueService = phoneValueService;
+        this.nodeValueRepository = nodeValueRepository;
+        this.edgeValueRepository = edgeValueRepository;
+        this.phoneValueRepository = phoneValueRepository;
+        this.nodePublicConverter = nodePublicConverter;
+        this.edgePublicConverter = edgePublicConverter;
+        this.phonePublicConverter = phonePublicConverter;
     }
 
     @Transactional(readOnly = true)
-    public Map<String, Object> buildGraph(Long nodeId, OffsetDateTime at) {
+    public GraphSnapshot loadGraph(Long nodeId, OffsetDateTime at) {
         OffsetDateTime now = at == null ? OffsetDateTime.now() : at;
         List<EdgeEntity> edges = loadEdges(nodeId);
         List<NodeEntity> nodes = loadNodes(nodeId, edges);
         Set<Long> nodeIds = nodes.stream().map(NodeEntity::getId).collect(Collectors.toSet());
         List<PhoneEntity> phones = loadPhones(nodeId, nodeIds);
+        return new GraphSnapshot(
+            nodes,
+            edges,
+            phones,
+            nodeValueService.getCurrentValues(now),
+            edgeValueService.getCurrentValues(now),
+            phoneValueService.getCurrentValues(now),
+            now
+        );
+    }
 
-        Map<Long, String> nodeValues = nodeValueService.getCurrentValues(now);
-        Map<Long, String> edgeValues = edgeValueService.getCurrentValues(now);
-        Map<Long, String> phoneValues = phoneValueService.getCurrentValues(now);
+    @Transactional
+    public void applyGraph(PublicGraphPostRequest request, OffsetDateTime now) {
+        List<NodePublicForm> nodes = request.getNodes() == null ? List.of() : request.getNodes();
+        List<EdgePublicForm> edges = request.getEdges() == null ? List.of() : request.getEdges();
+        List<PhonePublicForm> phones = request.getPhones() == null ? List.of() : request.getPhones();
 
-        List<Map<String, Object>> graph = new ArrayList<>();
-        for (NodeEntity node : nodes) {
-            Map<String, Object> entry = new LinkedHashMap<>();
-            entry.put("@id", "node:" + node.getId());
-            entry.put("@type", "Node");
-            String value = nodeValues.get(node.getId());
-            if (value != null) {
-                entry.put("value", value);
-            }
-            graph.add(entry);
+        for (NodePublicForm form : nodes) {
+            NodeEntity node = nodePublicConverter.toEntity(form);
+            NodeValueEntity value = nodePublicConverter.toValueEntity(node, form, now);
+            nodeValueRepository.save(value);
         }
 
-        for (EdgeEntity edge : edges) {
-            Map<String, Object> entry = new LinkedHashMap<>();
-            entry.put("@id", "edge:" + edge.getId());
-            entry.put("@type", "Edge");
-            entry.put("kind", resolveKind(edge));
-            if (edge.getFromNode() != null) {
-                entry.put("from", "node:" + edge.getFromNode().getId());
+        for (EdgePublicForm form : edges) {
+            EdgeEntity edge = edgePublicConverter.toEntity(form);
+            if (form.getValue() != null && !form.getValue().isBlank()) {
+                updateEdgeValue(edge, edgePublicConverter.toValueEntity(edge, form, now), now);
             }
-            if (edge.getToNode() != null) {
-                entry.put("to", "node:" + edge.getToNode().getId());
-            }
-            String value = edgeValues.get(edge.getId());
-            if (value != null) {
-                entry.put("value", value);
-            }
-            if (edge.getCreatedAt() != null) {
-                entry.put("createdAt", edge.getCreatedAt());
-            }
-            if (edge.getExpiredAt() != null) {
-                entry.put("expiredAt", edge.getExpiredAt());
-            }
-            graph.add(entry);
         }
 
-        for (PhoneEntity phone : phones) {
-            Map<String, Object> entry = new LinkedHashMap<>();
-            entry.put("@id", "phone:" + phone.getId());
-            entry.put("@type", "Phone");
-            entry.put("node", "node:" + phone.getNode().getId());
-            entry.put("pattern", phone.getPattern().getCode());
-            String value = phoneValues.get(phone.getId());
-            if (value != null) {
-                entry.put("value", value);
-            }
-            graph.add(entry);
+        for (PhonePublicForm form : phones) {
+            PhoneEntity phone = phonePublicConverter.toEntity(form);
+            updatePhoneValue(phone, phonePublicConverter.toValueEntity(phone, form, now), now);
         }
+    }
 
-        Map<String, Object> response = new LinkedHashMap<>();
-        response.put("@context", buildContext());
-        response.put("@graph", graph);
-        return response;
+    @Transactional
+    public void applyValuesPatch(PublicValuesPatchRequest request) {
+        if (request.getNodeValue() != null) {
+            applyNodeValueUpdate(request.getNodeValue());
+        }
+        if (request.getEdgeValue() != null) {
+            applyEdgeValueUpdate(request.getEdgeValue());
+        }
     }
 
     private List<EdgeEntity> loadEdges(Long nodeId) {
@@ -150,36 +168,66 @@ public class PublicGraphService {
             .toList();
     }
 
-    private Map<String, Object> buildContext() {
-        Map<String, Object> context = new LinkedHashMap<>();
-        context.put("@vocab", "https://example.org/shezhire#");
-        context.put("Node", "Node");
-        context.put("Edge", "Edge");
-        context.put("Phone", "Phone");
-        context.put("id", "@id");
-        context.put("type", "@type");
-        Map<String, Object> from = new LinkedHashMap<>();
-        from.put("@id", "from");
-        from.put("@type", "@id");
-        context.put("from", from);
-        Map<String, Object> to = new LinkedHashMap<>();
-        to.put("@id", "to");
-        to.put("@type", "@id");
-        context.put("to", to);
-        Map<String, Object> hasPhone = new LinkedHashMap<>();
-        hasPhone.put("@id", "hasPhone");
-        hasPhone.put("@type", "@id");
-        context.put("hasPhone", hasPhone);
-        return context;
+    private void updateEdgeValue(EdgeEntity edge, EdgeValueEntity next, OffsetDateTime effectiveAt) {
+        EdgeValueEntity current = edgeValueRepository.findCurrentValueByEdgeId(edge.getId(), effectiveAt)
+            .orElse(null);
+        if (current != null) {
+            current.setExpiredAt(effectiveAt);
+            edgeValueRepository.save(current);
+        }
+        edgeValueRepository.save(next);
     }
 
-    private String resolveKind(EdgeEntity edge) {
-        if (edge.isCategory()) {
-            return "Category";
+    private void updatePhoneValue(PhoneEntity phone, PhoneValueEntity next, OffsetDateTime effectiveAt) {
+        PhoneValueEntity current = phoneValueRepository.findCurrentValueByPhoneId(phone.getId(), effectiveAt)
+            .orElse(null);
+        if (current != null) {
+            current.setExpiredAt(effectiveAt);
+            phoneValueRepository.save(current);
         }
-        if (edge.isNote()) {
-            return "Note";
+        phoneValueRepository.save(next);
+    }
+
+    private void applyNodeValueUpdate(NodeValueForm form) {
+        OffsetDateTime effectiveAt = form.getEffectiveAt() == null ? OffsetDateTime.now() : form.getEffectiveAt();
+        NodeEntity node = nodeRepository.findById(form.getNodeId())
+            .orElseThrow(() -> new IllegalArgumentException("Node not found."));
+        NodeValueEntity current = nodeValueRepository.findCurrentValueByNodeId(node.getId(), effectiveAt)
+            .orElse(null);
+        if (current != null) {
+            current.setExpiredAt(effectiveAt);
+            nodeValueRepository.save(current);
         }
-        return "Relation";
+        NodeValueEntity next = new NodeValueEntity();
+        next.setNode(node);
+        next.setValue(form.getValue().trim());
+        next.setCreatedAt(effectiveAt);
+        next.setCreatedBy(normalize(form.getCreatedBy()));
+        nodeValueRepository.save(next);
+    }
+
+    private void applyEdgeValueUpdate(EdgeValueForm form) {
+        OffsetDateTime effectiveAt = form.getEffectiveAt() == null ? OffsetDateTime.now() : form.getEffectiveAt();
+        EdgeEntity edge = edgeRepository.findById(form.getEdgeId())
+            .orElseThrow(() -> new IllegalArgumentException("Edge not found."));
+        EdgeValueEntity current = edgeValueRepository.findCurrentValueByEdgeId(edge.getId(), effectiveAt)
+            .orElse(null);
+        if (current != null) {
+            current.setExpiredAt(effectiveAt);
+            edgeValueRepository.save(current);
+        }
+        EdgeValueEntity next = new EdgeValueEntity();
+        next.setEdge(edge);
+        next.setValue(form.getValue().trim());
+        next.setCreatedAt(effectiveAt);
+        next.setCreatedBy(normalize(form.getCreatedBy()));
+        edgeValueRepository.save(next);
+    }
+
+    private String normalize(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        return value.trim();
     }
 }

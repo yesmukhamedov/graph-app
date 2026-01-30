@@ -64,6 +64,30 @@ mvn spring-boot:run
 - http://localhost:8080/admin/phones
 - http://localhost:8080/graph/view
 
+## Reset database after migration squash
+
+Migrations have been squashed into a single `V1__init.sql`. If you previously ran older
+migrations, you must reset the database so Flyway can apply the new baseline from scratch.
+This **deletes all existing data** (including the old demo family).
+
+**Option A: drop and recreate the database (recommended)**
+
+```sql
+DROP DATABASE graphdb;
+CREATE DATABASE graphdb;
+```
+
+Then start the app again so Flyway applies the new migration.
+
+**Option B: drop and recreate the public schema**
+
+```sql
+DROP SCHEMA public CASCADE;
+CREATE SCHEMA public;
+```
+
+Then start the app again so Flyway applies the new migration.
+
 ## Public API documentation
 
 Swagger UI is available at:
@@ -113,7 +137,7 @@ Database settings live in `src/main/resources/application.yml` and default to:
 
 ## Seed data
 
-There is a mockup migration (`V10__mockup_demo_family.sql`) intended for training/new users.
+The database is seeded with a minimal public vocabulary category attached to a system node.
 
 ## Future entity ideas (not implemented)
 

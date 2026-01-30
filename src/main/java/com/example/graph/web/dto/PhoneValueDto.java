@@ -9,5 +9,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PhoneValueDto {
     private String value;
+    private String displayValue;
     private PhonePatternDto pattern;
 }

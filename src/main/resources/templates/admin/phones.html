@@ -52,7 +52,8 @@
                         th:attr="data-mask=${pattern.value}"></option>
             </select>
             <label for="phoneValue">Phone</label>
-            <input id="phoneValue" type="text" th:field="*{value}" maxlength="32" autocomplete="off" required />
+            <input id="phoneValue" type="text" maxlength="32" autocomplete="off" required />
+            <input id="phoneDigits" type="hidden" th:field="*{digits}" />
             <button type="submit">Create Phone</button>
         </div>
         <div class="form-row">
@@ -81,7 +82,7 @@
             <td th:text="${phone.id}"></td>
             <td th:text="${phone.nodeName}"></td>
             <td th:text="${phone.currentValue.pattern.code}"></td>
-            <td th:text="${phone.currentValue.value}"></td>
+            <td th:text="${phone.currentValue.displayValue}"></td>
             <td>
                 <form class="inline" th:action="@{/admin/phones/{id}/delete(id=${phone.id})}" method="post">
                     <button type="submit">Delete</button>
@@ -96,6 +97,7 @@
         const patternSelect = document.getElementById('patternId');
         const phoneInput = document.getElementById('phoneValue');
         const maskHint = document.getElementById('maskHint');
+        const phoneDigits = document.getElementById('phoneDigits');
         let mask = '';
         let underscorePositions = [];
 
@@ -131,6 +133,7 @@
                 phoneInput.value = normalizeValue(phoneInput.value);
             }
             maskHint.textContent = mask ? `Mask: ${mask}` : '';
+            updateDigits();
         }
 
         function fillNextDigit(digit) {
@@ -142,6 +145,7 @@
             const chars = current.split('');
             chars[nextIndex] = digit;
             phoneInput.value = chars.join('');
+            updateDigits();
         }
 
         function removePreviousDigit() {
@@ -152,15 +156,38 @@
                     const chars = current.split('');
                     chars[index] = '_';
                     phoneInput.value = chars.join('');
+                    updateDigits();
                     return;
                 }
             }
+        }
+
+        function getCodeDigits() {
+            if (!mask) {
+                return '';
+            }
+            const prefix = mask.split('_')[0];
+            return prefix.replace(/\D/g, '');
+        }
+
+        function updateDigits() {
+            if (!phoneDigits) {
+                return;
+            }
+            let raw = phoneInput.value.replace(/\D/g, '');
+            const codeDigits = getCodeDigits();
+            if (codeDigits && raw.startsWith(codeDigits)) {
+                raw = raw.slice(codeDigits.length);
+            }
+            phoneDigits.value = raw;
         }
 
         patternSelect.addEventListener('change', function () {
             const selected = patternSelect.options[patternSelect.selectedIndex];
             setMask(selected ? selected.dataset.mask : '', false);
         });
+
+        phoneInput.addEventListener('input', updateDigits);
 
         phoneInput.addEventListener('keydown', function (event) {
             if (!mask) {

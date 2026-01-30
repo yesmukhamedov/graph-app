@@ -2,6 +2,7 @@ package com.example.graph.controller.admin;
 
 import com.example.graph.service.NodeService;
 import com.example.graph.service.phone.PhoneService;
+import com.example.graph.validate.ValidationException;
 import com.example.graph.web.PhoneForm;
 import jakarta.validation.Valid;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -45,9 +46,9 @@ public class AdminPhoneController {
             return "redirect:/admin/phones";
         }
         try {
-            phoneService.createPhone(phoneForm.getNodeId(), phoneForm.getPatternId(), phoneForm.getValue());
+            phoneService.createPhone(phoneForm.getNodeId(), phoneForm.getPatternId(), phoneForm.getDigits());
             redirectAttributes.addFlashAttribute("success", "Phone created.");
-        } catch (IllegalArgumentException ex) {
+        } catch (IllegalArgumentException | ValidationException ex) {
             redirectAttributes.addFlashAttribute("error", ex.getMessage());
             redirectAttributes.addFlashAttribute("phoneForm", phoneForm);
         } catch (DataIntegrityViolationException ex) {

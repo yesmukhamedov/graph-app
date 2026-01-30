@@ -22,17 +22,12 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
-@ToString(exclude = {"pattern", "node"})
+@ToString(exclude = {"node"})
 public class PhoneEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @EqualsAndHashCode.Include
     private Long id;
-
-    @NotNull
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "pattern_id", nullable = false)
-    private PhonePatternEntity pattern;
 
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)

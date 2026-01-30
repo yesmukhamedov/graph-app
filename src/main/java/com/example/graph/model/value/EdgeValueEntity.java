@@ -41,6 +41,12 @@ public class EdgeValueEntity {
     @Column(nullable = false, length = 200)
     private String value;
 
+    @Column(name = "body", columnDefinition = "text")
+    private String body;
+
+    @Column(name = "color", length = 32)
+    private String color;
+
     @Column(name = "created_at")
     private OffsetDateTime createdAt;
 

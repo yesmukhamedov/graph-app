@@ -3,12 +3,14 @@ package com.example.graph.service.phone;
 import com.example.graph.model.NodeEntity;
 import com.example.graph.model.phone.PhoneEntity;
 import com.example.graph.model.phone.PhonePatternEntity;
+import com.example.graph.model.phone.PhoneValueEntity;
 import com.example.graph.repository.NodeRepository;
 import com.example.graph.repository.PhonePatternRepository;
 import com.example.graph.repository.PhoneRepository;
 import com.example.graph.service.value.NodeValueService;
 import com.example.graph.web.dto.PhoneDto;
 import com.example.graph.web.dto.PhonePatternDto;
+import com.example.graph.web.dto.PhoneValueDto;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -57,10 +59,9 @@ public class PhoneService {
         }
         validateMaskedValue(value, pattern.getValue());
         PhoneEntity phone = new PhoneEntity();
-        phone.setPattern(pattern);
         phone.setNode(node);
         PhoneEntity savedPhone = phoneRepository.save(phone);
-        phoneValueService.createCurrentValue(savedPhone, value, java.time.OffsetDateTime.now());
+        phoneValueService.createCurrentValue(savedPhone, pattern, value, java.time.OffsetDateTime.now());
         return savedPhone;
     }
 
@@ -72,13 +73,12 @@ public class PhoneService {
     public List<PhoneDto> listPhonesDto() {
         java.time.OffsetDateTime now = java.time.OffsetDateTime.now();
         Map<Long, String> nodeNames = nodeValueService.getCurrentValues(now);
-        Map<Long, String> phoneValues = phoneValueService.getCurrentValues(now);
+        Map<Long, PhoneValueEntity> phoneValues = phoneValueService.getCurrentValues(now);
         return phoneRepository.findAll().stream()
             .map(phone -> new PhoneDto(
                 phone.getId(),
                 nodeNames.getOrDefault(phone.getNode().getId(), "—"),
-                phone.getPattern().getCode(),
-                phoneValues.get(phone.getId())
+                resolveCurrentValue(phoneValues.get(phone.getId()))
             ))
             .toList();
     }
@@ -106,5 +106,16 @@ public class PhoneService {
                 throw new IllegalArgumentException("Phone value does not match the selected pattern.");
             }
         }
+    }
+
+    private PhoneValueDto resolveCurrentValue(PhoneValueEntity value) {
+        if (value == null) {
+            return new PhoneValueDto(null, new PhonePatternDto(null, "—", null));
+        }
+        PhonePatternDto pattern = value.getPattern() == null
+            ? new PhonePatternDto(null, "—", null)
+            : new PhonePatternDto(value.getPattern().getId(), value.getPattern().getCode(),
+            value.getPattern().getValue());
+        return new PhoneValueDto(value.getValue(), pattern);
     }
 }

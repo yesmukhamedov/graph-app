@@ -13,13 +13,16 @@ public class PhonePublicValidator {
     private final NodeRepository nodeRepository;
     private final PhonePatternRepository phonePatternRepository;
     private final PhoneValueRepository phoneValueRepository;
+    private final PhoneDigitsValidator phoneDigitsValidator;
 
     public PhonePublicValidator(NodeRepository nodeRepository,
                                 PhonePatternRepository phonePatternRepository,
-                                PhoneValueRepository phoneValueRepository) {
+                                PhoneValueRepository phoneValueRepository,
+                                PhoneDigitsValidator phoneDigitsValidator) {
         this.nodeRepository = nodeRepository;
         this.phonePatternRepository = phonePatternRepository;
         this.phoneValueRepository = phoneValueRepository;
+        this.phoneDigitsValidator = phoneDigitsValidator;
     }
 
     public void validate(PhonePublicForm form) {
@@ -32,19 +35,19 @@ public class PhonePublicValidator {
         if (form.getPatternId() == null) {
             throw new ValidationException("Pattern is required.");
         }
-        if (form.getValue() == null || form.getValue().isBlank()) {
-            throw new ValidationException("Value is required.");
+        if (form.getDigits() == null || form.getDigits().isBlank()) {
+            throw new ValidationException("Digits are required.");
         }
-        if (form.getValue().trim().length() > MAX_VALUE_LENGTH) {
-            throw new ValidationException("Value must be at most 32 characters.");
+        if (form.getDigits().trim().length() > MAX_VALUE_LENGTH) {
+            throw new ValidationException("Digits must be at most 32 characters.");
         }
         if (!nodeRepository.existsById(form.getNodeId())) {
             throw new ValidationException("Node not found.");
         }
-        if (!phonePatternRepository.existsById(form.getPatternId())) {
-            throw new ValidationException("Pattern not found.");
-        }
-        if (phoneValueRepository.existsByValue(form.getValue())) {
+        var pattern = phonePatternRepository.findById(form.getPatternId())
+            .orElseThrow(() -> new ValidationException("Pattern not found."));
+        phoneDigitsValidator.validateDigitsAgainstPattern(form.getDigits().trim(), pattern);
+        if (phoneValueRepository.existsByValue(form.getDigits().trim())) {
             throw new ValidationException("Phone value already exists.");
         }
     }

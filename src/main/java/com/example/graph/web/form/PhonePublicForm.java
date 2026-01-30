@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 public class PhonePublicForm {
     private Long nodeId;
     private Long patternId;
-    private String value;
+    private String digits;
     private String createdBy;
 }

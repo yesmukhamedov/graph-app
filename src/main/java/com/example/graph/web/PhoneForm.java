@@ -13,7 +13,7 @@ public class PhoneForm {
     @NotNull(message = "Pattern is required.")
     private Long patternId;
 
-    @NotBlank(message = "Value is required.")
-    @Size(max = 32, message = "Value must be at most 32 characters.")
-    private String value;
+    @NotBlank(message = "Digits are required.")
+    @Size(max = 32, message = "Digits must be at most 32 characters.")
+    private String digits;
 }

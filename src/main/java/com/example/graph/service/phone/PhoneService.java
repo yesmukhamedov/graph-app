@@ -8,6 +8,8 @@ import com.example.graph.repository.NodeRepository;
 import com.example.graph.repository.PhonePatternRepository;
 import com.example.graph.repository.PhoneRepository;
 import com.example.graph.service.value.NodeValueService;
+import com.example.graph.validate.PhoneDigitsValidator;
+import com.example.graph.validate.ValidationException;
 import com.example.graph.web.dto.PhoneDto;
 import com.example.graph.web.dto.PhonePatternDto;
 import com.example.graph.web.dto.PhoneValueDto;
@@ -24,29 +26,33 @@ public class PhoneService {
     private final NodeRepository nodeRepository;
     private final PhoneValueService phoneValueService;
     private final NodeValueService nodeValueService;
+    private final PhoneDigitsValidator phoneDigitsValidator;
 
     public PhoneService(PhoneRepository phoneRepository,
                         PhonePatternRepository phonePatternRepository,
                         NodeRepository nodeRepository,
                         PhoneValueService phoneValueService,
-                        NodeValueService nodeValueService) {
+                        NodeValueService nodeValueService,
+                        PhoneDigitsValidator phoneDigitsValidator) {
         this.phoneRepository = phoneRepository;
         this.phonePatternRepository = phonePatternRepository;
         this.nodeRepository = nodeRepository;
         this.phoneValueService = phoneValueService;
         this.nodeValueService = nodeValueService;
+        this.phoneDigitsValidator = phoneDigitsValidator;
     }
 
-    public PhoneEntity createPhone(Long nodeId, Long patternId, String value) {
+    public PhoneEntity createPhone(Long nodeId, Long patternId, String digits) {
         if (nodeId == null) {
             throw new IllegalArgumentException("Node is required.");
         }
         if (patternId == null) {
             throw new IllegalArgumentException("Pattern is required.");
         }
-        if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException("Value is required.");
+        if (digits == null || digits.isBlank()) {
+            throw new IllegalArgumentException("Digits are required.");
         }
+        String normalizedDigits = digits.trim();
         NodeEntity node = nodeRepository.findById(nodeId)
             .orElseThrow(() -> new IllegalArgumentException("Node not found."));
         PhonePatternEntity pattern = phonePatternRepository.findById(patternId)
@@ -54,14 +60,18 @@ public class PhoneService {
         if (phoneRepository.existsByNodeId(nodeId)) {
             throw new IllegalArgumentException("Selected node already has a phone.");
         }
-        if (phoneValueService.existsByValue(value)) {
+        if (phoneValueService.existsByValue(normalizedDigits)) {
             throw new IllegalArgumentException("Phone value already exists.");
         }
-        validateMaskedValue(value, pattern.getValue());
+        try {
+            phoneDigitsValidator.validateDigitsAgainstPattern(normalizedDigits, pattern);
+        } catch (ValidationException ex) {
+            throw new IllegalArgumentException(ex.getMessage(), ex);
+        }
         PhoneEntity phone = new PhoneEntity();
         phone.setNode(node);
         PhoneEntity savedPhone = phoneRepository.save(phone);
-        phoneValueService.createCurrentValue(savedPhone, pattern, value, java.time.OffsetDateTime.now());
+        phoneValueService.createCurrentValue(savedPhone, pattern, normalizedDigits, java.time.OffsetDateTime.now());
         return savedPhone;
     }
 
@@ -91,31 +101,18 @@ public class PhoneService {
             .toList();
     }
 
-    private void validateMaskedValue(String value, String mask) {
-        if (value.length() != mask.length()) {
-            throw new IllegalArgumentException("Phone value does not match the selected pattern.");
-        }
-        for (int i = 0; i < mask.length(); i++) {
-            char maskChar = mask.charAt(i);
-            char valueChar = value.charAt(i);
-            if (maskChar == '_') {
-                if (!Character.isDigit(valueChar)) {
-                    throw new IllegalArgumentException("Phone value does not match the selected pattern.");
-                }
-            } else if (valueChar != maskChar) {
-                throw new IllegalArgumentException("Phone value does not match the selected pattern.");
-            }
-        }
-    }
-
     private PhoneValueDto resolveCurrentValue(PhoneValueEntity value) {
         if (value == null) {
-            return new PhoneValueDto(null, new PhonePatternDto(null, "—", null));
+            return new PhoneValueDto(null, null, new PhonePatternDto(null, "—", null));
         }
         PhonePatternDto pattern = value.getPattern() == null
             ? new PhonePatternDto(null, "—", null)
             : new PhonePatternDto(value.getPattern().getId(), value.getPattern().getCode(),
             value.getPattern().getValue());
-        return new PhoneValueDto(value.getValue(), pattern);
+        String displayValue = PhoneFormatUtils.formatPhone(pattern.getValue(), value.getValue());
+        if (displayValue == null) {
+            displayValue = value.getValue();
+        }
+        return new PhoneValueDto(value.getValue(), displayValue, pattern);
     }
 }

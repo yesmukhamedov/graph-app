@@ -4,6 +4,7 @@ import com.example.graph.model.EdgeEntity;
 import com.example.graph.model.NodeEntity;
 import com.example.graph.model.phone.PhoneEntity;
 import com.example.graph.model.phone.PhoneValueEntity;
+import com.example.graph.service.phone.PhoneFormatUtils;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -59,7 +60,12 @@ public class JsonLdConverter {
                 entry.put("pattern", currentValue.getPattern().getCode());
             }
             if (currentValue != null && currentValue.getValue() != null) {
-                entry.put("value", currentValue.getValue());
+                entry.put("digits", currentValue.getValue());
+                String formatted = PhoneFormatUtils.formatPhone(
+                    currentValue.getPattern() == null ? null : currentValue.getPattern().getValue(),
+                    currentValue.getValue()
+                );
+                entry.put("value", formatted == null ? currentValue.getValue() : formatted);
             }
             graph.add(entry);
         }

@@ -438,20 +438,14 @@ FROM demo_edges
 WHERE label = 'madina_nationality';
 
 INSERT INTO edge_values (edge_id, value)
-SELECT edge_id, 'FATHER'
+SELECT edge_id, 'Parent'
 FROM demo_edges
 WHERE label IN (
     'serik_parent_ayan',
-    'ayan_parent_dias',
-    'ayan_parent_madina'
-);
-
-INSERT INTO edge_values (edge_id, value)
-SELECT edge_id, 'MOTHER'
-FROM demo_edges
-WHERE label IN (
     'gulnara_parent_ayan',
+    'ayan_parent_dias',
     'aigerim_parent_dias',
+    'ayan_parent_madina',
     'aigerim_parent_madina'
 );
 

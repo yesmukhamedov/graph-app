@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 @SpringBootTest
 @AutoConfigureMockMvc
 @TestPropertySource(properties = {
+    "spring.security.oauth2.resourceserver.jwt.issuer-uri=http://issuer.test",
     "auth.expected-issuer=http://issuer.test",
     "auth.expected-audience=rumor"
 })

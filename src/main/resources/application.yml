@@ -15,13 +15,11 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: ${AUTH_ISSUER_URI:}
-          jwk-set-uri: ${AUTH_JWK_SET_URI:}
+          issuer-uri: ${AUTH_ISSUER_URI:#{null}}
+          jwk-set-uri: ${AUTH_JWK_SET_URI:#{null}}
 server:
   port: 8080
 auth:
-  security:
-    enabled: false
-  expected-issuer: ${AUTH_EXPECTED_ISSUER:}
+  expected-issuer: ${AUTH_EXPECTED_ISSUER:#{null}}
   expected-audience: ${AUTH_EXPECTED_AUDIENCE:rumor}
   permit-public: true

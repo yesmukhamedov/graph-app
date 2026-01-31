@@ -97,37 +97,3 @@ VALUES
     ('MY', '+60 ( _ _ ) - _ _ _ _ - _ _ _ _'),
     ('TJ', '+992 ( _ _ ) - _ _ _ - _ _ - _ _')
 ON CONFLICT (code) DO NOTHING;
-
-WITH system_node AS (
-    INSERT INTO nodes DEFAULT VALUES
-    RETURNING id
-),
-vocab(value, color, ord) AS (
-    VALUES
-        ('MALE', 'blue', 1),
-        ('FEMALE', 'red', 2),
-        ('ALIVE', 'green', 3),
-        ('DEAD', 'green', 4)
-),
-inserted_node_value AS (
-    INSERT INTO node_values (node_id, value, body, color, created_at, expired_at)
-    SELECT id, 'SYSTEM_VOCAB', NULL, NULL, now(), NULL
-    FROM system_node
-    RETURNING node_id
-),
-inserted_edges AS (
-    INSERT INTO edges (from_id, to_id, created_at, expired_at)
-    SELECT NULL, node_id, now(), NULL
-    FROM inserted_node_value
-    JOIN vocab ON true
-    ORDER BY vocab.ord
-    RETURNING id
-),
-ordered_edges AS (
-    SELECT id, row_number() OVER (ORDER BY id) AS ord
-    FROM inserted_edges
-)
-INSERT INTO edge_values (edge_id, value, body, color, created_at, expired_at)
-SELECT ordered_edges.id, vocab.value, NULL, vocab.color, now(), NULL
-FROM ordered_edges
-JOIN vocab ON vocab.ord = ordered_edges.ord;

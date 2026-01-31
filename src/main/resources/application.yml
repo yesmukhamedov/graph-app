@@ -17,6 +17,12 @@ spring:
         jwt:
           issuer-uri: ${AUTH_ISSUER_URI:#{null}}
           jwk-set-uri: ${AUTH_JWK_SET_URI:#{null}}
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+  api-docs:
+    path: /v3/api-docs
 server:
   port: 8080
 auth:

@@ -8,12 +8,10 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Schema(description = "Phone payload")
-public class PhonePublicForm {
-    @Schema(description = "Node id for phone")
+@Schema(description = "User profile payload")
+public class UserPublicForm {
+    @Schema(description = "Node id for user")
     private Long nodeId;
-    @Schema(description = "Pattern id for phone")
-    private Long patternId;
     @Schema(description = "Digits-only phone value")
     private String value;
 }

@@ -44,10 +44,10 @@ public class NodeService {
     }
 
     @Transactional(readOnly = true)
-    public List<NodeDto> listNodesWithoutPhoneDto() {
+    public List<NodeDto> listNodesWithoutUserDto() {
         OffsetDateTime now = OffsetDateTime.now();
         Map<Long, String> currentValues = nodeValueService.getCurrentValues(now);
-        return nodeRepository.findNodesWithoutPhone().stream()
+        return nodeRepository.findNodesWithoutUser().stream()
             .map(node -> new NodeDto(node.getId(), currentValues.getOrDefault(node.getId(), "—")))
             .toList();
     }

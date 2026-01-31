@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.example.graph.web.form.EdgePublicForm;
 import com.example.graph.web.form.NodePublicForm;
-import com.example.graph.web.form.PhonePublicForm;
+import com.example.graph.web.form.UserPublicForm;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,5 +17,5 @@ import lombok.NoArgsConstructor;
 public class PublicGraphPostRequest {
     private List<NodePublicForm> nodes;
     private List<EdgePublicForm> edges;
-    private List<PhonePublicForm> phones;
+    private List<UserPublicForm> users;
 }

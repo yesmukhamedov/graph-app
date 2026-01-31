@@ -9,7 +9,7 @@ public interface NodeRepository extends JpaRepository<NodeEntity, Long> {
     @Query("""
         select n
         from NodeEntity n
-        where n.id not in (select p.node.id from PhoneEntity p)
+        where n.id not in (select u.node.id from UserEntity u)
         """)
-    List<NodeEntity> findNodesWithoutPhone();
+    List<NodeEntity> findNodesWithoutUser();
 }

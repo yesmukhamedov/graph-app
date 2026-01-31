@@ -2,21 +2,22 @@ package com.example.graph.converter;
 
 import com.example.graph.model.EdgeEntity;
 import com.example.graph.model.NodeEntity;
-import com.example.graph.model.phone.PhoneEntity;
-import com.example.graph.model.phone.PhoneValueEntity;
+import com.example.graph.model.user.ProfileEntity;
+import com.example.graph.model.user.UserEntity;
 import com.example.graph.model.value.EdgeValueEntity;
 import com.example.graph.snapshot.TimeSlice;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 public class GraphSnapshot {
     private final List<NodeEntity> nodes;
     private final List<EdgeEntity> edges;
-    private final List<PhoneEntity> phones;
+    private final List<UserEntity> users;
     private final Map<Long, String> nodeValues;
     private final Map<Long, EdgeValueEntity> edgeValues;
-    private final Map<Long, PhoneValueEntity> phoneValues;
+    private final Map<UUID, ProfileEntity> profiles;
     private final TimeSlice timeSlice;
     private final Long focusNodeId;
     private final String scope;
@@ -24,20 +25,20 @@ public class GraphSnapshot {
 
     public GraphSnapshot(List<NodeEntity> nodes,
                          List<EdgeEntity> edges,
-                         List<PhoneEntity> phones,
+                         List<UserEntity> users,
                          Map<Long, String> nodeValues,
                          Map<Long, EdgeValueEntity> edgeValues,
-                         Map<Long, PhoneValueEntity> phoneValues,
+                         Map<UUID, ProfileEntity> profiles,
                          TimeSlice timeSlice,
                          Long focusNodeId,
                          String scope,
                          int hops) {
         this.nodes = nodes;
         this.edges = edges;
-        this.phones = phones;
+        this.users = users;
         this.nodeValues = nodeValues;
         this.edgeValues = edgeValues;
-        this.phoneValues = phoneValues;
+        this.profiles = profiles;
         this.timeSlice = timeSlice;
         this.focusNodeId = focusNodeId;
         this.scope = scope;
@@ -52,8 +53,8 @@ public class GraphSnapshot {
         return edges;
     }
 
-    public List<PhoneEntity> getPhones() {
-        return phones;
+    public List<UserEntity> getUsers() {
+        return users;
     }
 
     public Map<Long, String> getNodeValues() {
@@ -64,8 +65,8 @@ public class GraphSnapshot {
         return edgeValues;
     }
 
-    public Map<Long, PhoneValueEntity> getPhoneValues() {
-        return phoneValues;
+    public Map<UUID, ProfileEntity> getProfiles() {
+        return profiles;
     }
 
     public OffsetDateTime getAtRequested() {

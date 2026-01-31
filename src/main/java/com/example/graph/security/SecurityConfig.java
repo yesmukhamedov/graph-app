@@ -92,6 +92,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> {
                 auth.requestMatchers("/actuator/health").permitAll()
                     .requestMatchers("/admin/**").permitAll()
+                    .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                     .requestMatchers("/css/**", "/js/**", "/webjars/**").permitAll();
                 if (authSecurityProperties.isPermitPublic()) {
                     auth.requestMatchers(HttpMethod.GET, "/public/graph").permitAll();

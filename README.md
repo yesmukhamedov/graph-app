@@ -17,8 +17,10 @@ This app models family data as a directed graph:
 - **NodeEntity:** a person node.
 - **EdgeEntity:** a single edge type that represents categories, private notes, or relations
   (`isCategory`, `isNote`, `isRelation` helpers).
-- **PhoneEntity / PhonePatternEntity:** phone numbers linked to nodes + patterns.
-- **NodeValue / EdgeValue / PhoneValue:** versioned values with `created_at` / `expired_at`.
+- **UserEntity:** user identity linked to a node (UUID id).
+- **ProfileEntity:** versioned profile data such as phone digits.
+- **NodeValue / EdgeValue / Profile:** versioned values with `created_at` / `expired_at`.
+- Phone patterns are no longer modeled; profiles store digits-only values.
 
 ## Example modeling patterns
 
@@ -64,7 +66,7 @@ mvn spring-boot:run
 
 - http://localhost:8080/admin/nodes
 - http://localhost:8080/admin/edges
-- http://localhost:8080/admin/phones
+- http://localhost:8080/admin/users
 - http://localhost:8080/graph/view
 
 ## Reset database after migration squash
@@ -113,7 +115,7 @@ curl -X POST "http://localhost:8080/public/graph" \
       { "value": { "value": "New Person" } }
     ],
     "edges": [],
-    "phones": []
+    "users": []
   }'
 ```
 

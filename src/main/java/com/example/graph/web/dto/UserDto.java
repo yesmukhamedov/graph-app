@@ -1,5 +1,6 @@
 package com.example.graph.web.dto;
 
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,8 +8,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PhoneDto {
-    private Long id;
+public class UserDto {
+    private UUID id;
     private String nodeName;
-    private PhoneValueDto currentValue;
+    private String phoneDigits;
 }

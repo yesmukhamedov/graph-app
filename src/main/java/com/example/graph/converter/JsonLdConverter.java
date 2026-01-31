@@ -2,10 +2,9 @@ package com.example.graph.converter;
 
 import com.example.graph.model.EdgeEntity;
 import com.example.graph.model.NodeEntity;
-import com.example.graph.model.phone.PhoneEntity;
-import com.example.graph.model.phone.PhoneValueEntity;
+import com.example.graph.model.user.ProfileEntity;
+import com.example.graph.model.user.UserEntity;
 import com.example.graph.model.value.EdgeValueEntity;
-import com.example.graph.service.phone.PhoneFormatUtils;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,7 +15,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class JsonLdConverter {
-    private static final List<String> META_INCLUDE = List.of("relations", "categories", "notes", "phones");
+    private static final List<String> META_INCLUDE = List.of("relations", "categories", "notes", "users");
     private static final Map<String, Object> CONTEXT = buildContext();
 
     public JsonLdDocument toJsonLd(GraphSnapshot snapshot) {
@@ -62,22 +61,14 @@ public class JsonLdConverter {
             graph.add(entry);
         }
 
-        for (PhoneEntity phone : snapshot.getPhones()) {
+        for (UserEntity user : snapshot.getUsers()) {
             Map<String, Object> entry = new LinkedHashMap<>();
-            entry.put("@id", "phone:" + phone.getId());
-            entry.put("@type", "Phone");
-            entry.put("node", "node:" + phone.getNode().getId());
-            PhoneValueEntity currentValue = snapshot.getPhoneValues().get(phone.getId());
-            if (currentValue != null && currentValue.getPattern() != null) {
-                entry.put("pattern", currentValue.getPattern().getCode());
-            }
-            if (currentValue != null && currentValue.getValue() != null) {
-                entry.put("digits", currentValue.getValue());
-                String formatted = PhoneFormatUtils.formatPhone(
-                    currentValue.getPattern() == null ? null : currentValue.getPattern().getValue(),
-                    currentValue.getValue()
-                );
-                entry.put("value", formatted == null ? currentValue.getValue() : formatted);
+            entry.put("@id", "user:" + user.getId());
+            entry.put("@type", "User");
+            entry.put("node", "node:" + user.getNode().getId());
+            ProfileEntity currentProfile = snapshot.getProfiles().get(user.getId());
+            if (currentProfile != null && currentProfile.getPhoneDigits() != null) {
+                entry.put("phoneDigits", currentProfile.getPhoneDigits());
             }
             graph.add(entry);
         }
@@ -121,7 +112,7 @@ public class JsonLdConverter {
         context.put("@vocab", "https://example.org/shezhire#");
         context.put("Node", "Node");
         context.put("Edge", "Edge");
-        context.put("Phone", "Phone");
+        context.put("User", "User");
         context.put("id", "@id");
         context.put("type", "@type");
         context.put("kind", "kind");
@@ -130,6 +121,7 @@ public class JsonLdConverter {
         context.put("expiredAt", "expiredAt");
         context.put("value", "value");
         context.put("body", "body");
+        context.put("phoneDigits", "phoneDigits");
         Map<String, Object> from = new LinkedHashMap<>();
         from.put("@id", "from");
         from.put("@type", "@id");
@@ -138,10 +130,10 @@ public class JsonLdConverter {
         to.put("@id", "to");
         to.put("@type", "@id");
         context.put("to", to);
-        Map<String, Object> hasPhone = new LinkedHashMap<>();
-        hasPhone.put("@id", "hasPhone");
-        hasPhone.put("@type", "@id");
-        context.put("hasPhone", hasPhone);
+        Map<String, Object> hasUser = new LinkedHashMap<>();
+        hasUser.put("@id", "hasUser");
+        hasUser.put("@type", "@id");
+        context.put("hasUser", hasUser);
         return Collections.unmodifiableMap(context);
     }
 

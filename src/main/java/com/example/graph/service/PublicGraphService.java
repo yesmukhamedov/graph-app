@@ -3,25 +3,25 @@ package com.example.graph.service;
 import com.example.graph.converter.EdgePublicConverter;
 import com.example.graph.converter.GraphSnapshot;
 import com.example.graph.converter.NodePublicConverter;
-import com.example.graph.converter.PhonePublicConverter;
+import com.example.graph.converter.UserPublicConverter;
 import com.example.graph.model.EdgeEntity;
 import com.example.graph.model.NodeEntity;
-import com.example.graph.model.phone.PhoneEntity;
 import com.example.graph.model.value.EdgeValueEntity;
 import com.example.graph.model.value.NodeValueEntity;
-import com.example.graph.model.phone.PhoneValueEntity;
+import com.example.graph.model.user.ProfileEntity;
+import com.example.graph.model.user.UserEntity;
 import com.example.graph.repository.EdgeRepository;
 import com.example.graph.repository.EdgeValueRepository;
 import com.example.graph.repository.NodeRepository;
 import com.example.graph.repository.NodeValueRepository;
-import com.example.graph.repository.PhoneRepository;
-import com.example.graph.repository.PhoneValueRepository;
-import com.example.graph.service.phone.PhoneValueService;
+import com.example.graph.repository.ProfileRepository;
+import com.example.graph.repository.UserRepository;
+import com.example.graph.service.user.ProfileService;
 import com.example.graph.service.value.EdgeValueService;
 import com.example.graph.service.value.NodeValueService;
 import com.example.graph.validate.EdgePublicValidator;
 import com.example.graph.validate.NodePublicValidator;
-import com.example.graph.validate.PhonePublicValidator;
+import com.example.graph.validate.UserPublicValidator;
 import com.example.graph.validate.ValidationErrorCollector;
 import com.example.graph.validate.ValidationException;
 import com.example.graph.web.problem.ProblemFieldError;
@@ -29,7 +29,7 @@ import com.example.graph.web.PublicGraphPostRequest;
 import com.example.graph.web.PublicValuesPatchRequest;
 import com.example.graph.web.form.EdgePublicForm;
 import com.example.graph.web.form.NodePublicForm;
-import com.example.graph.web.form.PhonePublicForm;
+import com.example.graph.web.form.UserPublicForm;
 import com.example.graph.web.form.EdgeValueForm;
 import com.example.graph.web.form.NodeValueForm;
 import com.example.graph.snapshot.TimeSlice;
@@ -47,50 +47,50 @@ import org.springframework.transaction.annotation.Transactional;
 public class PublicGraphService {
     private final NodeRepository nodeRepository;
     private final EdgeRepository edgeRepository;
-    private final PhoneRepository phoneRepository;
+    private final UserRepository userRepository;
     private final NodeValueService nodeValueService;
     private final EdgeValueService edgeValueService;
-    private final PhoneValueService phoneValueService;
+    private final ProfileService profileService;
     private final NodeValueRepository nodeValueRepository;
     private final EdgeValueRepository edgeValueRepository;
-    private final PhoneValueRepository phoneValueRepository;
+    private final ProfileRepository profileRepository;
     private final NodePublicConverter nodePublicConverter;
     private final EdgePublicConverter edgePublicConverter;
-    private final PhonePublicConverter phonePublicConverter;
+    private final UserPublicConverter userPublicConverter;
     private final NodePublicValidator nodePublicValidator;
     private final EdgePublicValidator edgePublicValidator;
-    private final PhonePublicValidator phonePublicValidator;
+    private final UserPublicValidator userPublicValidator;
 
     public PublicGraphService(NodeRepository nodeRepository,
                               EdgeRepository edgeRepository,
-                              PhoneRepository phoneRepository,
+                              UserRepository userRepository,
                               NodeValueService nodeValueService,
                               EdgeValueService edgeValueService,
-                              PhoneValueService phoneValueService,
+                              ProfileService profileService,
                               NodeValueRepository nodeValueRepository,
                               EdgeValueRepository edgeValueRepository,
-                              PhoneValueRepository phoneValueRepository,
+                              ProfileRepository profileRepository,
                               NodePublicConverter nodePublicConverter,
                               EdgePublicConverter edgePublicConverter,
-                              PhonePublicConverter phonePublicConverter,
+                              UserPublicConverter userPublicConverter,
                               NodePublicValidator nodePublicValidator,
                               EdgePublicValidator edgePublicValidator,
-                              PhonePublicValidator phonePublicValidator) {
+                              UserPublicValidator userPublicValidator) {
         this.nodeRepository = nodeRepository;
         this.edgeRepository = edgeRepository;
-        this.phoneRepository = phoneRepository;
+        this.userRepository = userRepository;
         this.nodeValueService = nodeValueService;
         this.edgeValueService = edgeValueService;
-        this.phoneValueService = phoneValueService;
+        this.profileService = profileService;
         this.nodeValueRepository = nodeValueRepository;
         this.edgeValueRepository = edgeValueRepository;
-        this.phoneValueRepository = phoneValueRepository;
+        this.profileRepository = profileRepository;
         this.nodePublicConverter = nodePublicConverter;
         this.edgePublicConverter = edgePublicConverter;
-        this.phonePublicConverter = phonePublicConverter;
+        this.userPublicConverter = userPublicConverter;
         this.nodePublicValidator = nodePublicValidator;
         this.edgePublicValidator = edgePublicValidator;
-        this.phonePublicValidator = phonePublicValidator;
+        this.userPublicValidator = userPublicValidator;
     }
 
     @Transactional(readOnly = true)
@@ -99,16 +99,16 @@ public class PublicGraphService {
         List<EdgeEntity> edges = loadEdges(nodeId);
         List<NodeEntity> nodes = loadNodes(nodeId, edges);
         Set<Long> nodeIds = nodes.stream().map(NodeEntity::getId).collect(Collectors.toSet());
-        List<PhoneEntity> phones = loadPhones(nodeId, nodeIds);
+        List<UserEntity> users = loadUsers(nodeId, nodeIds);
         String scope = nodeId == null ? "FULL" : "1-hop";
         int hops = nodeId == null ? 0 : 1;
         return new GraphSnapshot(
             nodes,
             edges,
-            phones,
+            users,
             nodeValueService.getCurrentValues(resolved),
             edgeValueService.getCurrentValueEntities(resolved),
-            phoneValueService.getCurrentValues(resolved),
+            profileService.getCurrentProfiles(resolved),
             timeSlice,
             nodeId,
             scope,
@@ -120,7 +120,7 @@ public class PublicGraphService {
     public void applyGraph(PublicGraphPostRequest request, OffsetDateTime now) {
         List<NodePublicForm> nodes = request.getNodes() == null ? List.of() : request.getNodes();
         List<EdgePublicForm> edges = request.getEdges() == null ? List.of() : request.getEdges();
-        List<PhonePublicForm> phones = request.getPhones() == null ? List.of() : request.getPhones();
+        List<UserPublicForm> users = request.getUsers() == null ? List.of() : request.getUsers();
         ValidationErrorCollector errors = new ValidationErrorCollector();
         for (int index = 0; index < nodes.size(); index++) {
             nodePublicValidator.validate(nodes.get(index), "nodes[" + index + "]", errors);
@@ -128,8 +128,8 @@ public class PublicGraphService {
         for (int index = 0; index < edges.size(); index++) {
             edgePublicValidator.validate(edges.get(index), "edges[" + index + "]", errors);
         }
-        for (int index = 0; index < phones.size(); index++) {
-            phonePublicValidator.validate(phones.get(index), "phones[" + index + "]", errors);
+        for (int index = 0; index < users.size(); index++) {
+            userPublicValidator.validate(users.get(index), "users[" + index + "]", errors);
         }
         errors.throwIfAny();
 
@@ -150,9 +150,9 @@ public class PublicGraphService {
             }
         }
 
-        for (PhonePublicForm form : phones) {
-            PhoneEntity phone = phonePublicConverter.toEntity(form);
-            updatePhoneValue(phone, phonePublicConverter.toValueEntity(phone, form, now), now);
+        for (UserPublicForm form : users) {
+            UserEntity user = userPublicConverter.toEntity(form, now);
+            updateProfileValue(user, userPublicConverter.toProfileEntity(user, form, now), now);
         }
     }
 
@@ -206,12 +206,12 @@ public class PublicGraphService {
         return nodeRepository.findAllById(ids);
     }
 
-    private List<PhoneEntity> loadPhones(Long nodeId, Set<Long> nodeIds) {
+    private List<UserEntity> loadUsers(Long nodeId, Set<Long> nodeIds) {
         if (nodeId == null) {
-            return phoneRepository.findAll();
+            return userRepository.findAll();
         }
-        return phoneRepository.findAll().stream()
-            .filter(phone -> nodeIds.contains(phone.getNode().getId()))
+        return userRepository.findAll().stream()
+            .filter(user -> nodeIds.contains(user.getNode().getId()))
             .toList();
     }
 
@@ -225,14 +225,14 @@ public class PublicGraphService {
         edgeValueRepository.save(next);
     }
 
-    private void updatePhoneValue(PhoneEntity phone, PhoneValueEntity next, OffsetDateTime effectiveAt) {
-        PhoneValueEntity current = phoneValueRepository.findCurrentValueByPhoneId(phone.getId(), effectiveAt)
+    private void updateProfileValue(UserEntity user, ProfileEntity next, OffsetDateTime effectiveAt) {
+        ProfileEntity current = profileRepository.findCurrentProfileByUserId(user.getId(), effectiveAt)
             .orElse(null);
         if (current != null) {
             current.setExpiredAt(effectiveAt);
-            phoneValueRepository.save(current);
+            profileRepository.save(current);
         }
-        phoneValueRepository.save(next);
+        profileRepository.save(next);
     }
 
     private void applyNodeValueUpdate(NodeValueForm form, OffsetDateTime now) {
